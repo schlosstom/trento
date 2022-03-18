@@ -46,6 +46,13 @@ func addServeCmd(webCmd *cobra.Command) {
 	var key string
 	var ca string
 
+	var grafanaPublicURL string
+	var grafanaApiURL string
+	var grafanaUser string
+	var grafanaPassword string
+
+	var prometheusURL string
+
 	serveCmd := &cobra.Command{
 		Use:   "serve",
 		Short: "Starts the web application",
@@ -60,6 +67,13 @@ func addServeCmd(webCmd *cobra.Command) {
 	serveCmd.Flags().StringVar(&cert, "cert", "", "mTLS server certificate")
 	serveCmd.Flags().StringVar(&key, "key", "", "mTLS server key")
 	serveCmd.Flags().StringVar(&ca, "ca", "", "mTLS Certificate Authority")
+
+	serveCmd.Flags().StringVar(&grafanaPublicURL, "grafana-public-url", "", "Browsable Grafana URL, if not provided, the API url will be used. This is the base url for iframes embedding.")
+	serveCmd.Flags().StringVar(&grafanaApiURL, "grafana-api-url", "http://localhost:3000", "Grafana API URL")
+	serveCmd.Flags().StringVar(&grafanaUser, "grafana-user", "admin", "Grafana user")
+	serveCmd.Flags().StringVar(&grafanaPassword, "grafana-password", "", "Grafana password")
+
+	serveCmd.Flags().StringVar(&prometheusURL, "prometheus-url", "http://localhost:9090", "Prometheus server URL")
 
 	webCmd.AddCommand(serveCmd)
 }
@@ -82,7 +96,7 @@ func serve(*cobra.Command, []string) {
 		log.Fatal("Failed to configure the web application instance: ", err)
 	}
 
-	app, err := web.NewApp(config)
+	app, err := web.NewApp(ctx, config)
 	if err != nil {
 		log.Fatal("Failed to create the web application instance: ", err)
 	}

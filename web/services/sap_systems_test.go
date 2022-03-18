@@ -5,6 +5,7 @@ import (
 
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/trento/internal/sapsystem/sapcontrol"
 	"github.com/trento-project/trento/test/helpers"
 	"github.com/trento-project/trento/web/entities"
 	"github.com/trento-project/trento/web/models"
@@ -20,8 +21,10 @@ func sapSystemsFixtures() entities.SAPSystemInstances {
 			Type:           "application",
 			InstanceNumber: "00",
 			Features:       "features",
+			Status:         string(sapcontrol.STATECOLOR_RED),
 			DBHost:         "dbhost_1",
 			DBName:         "tenant",
+			DBAddress:      "192.168.1.10",
 			Host: &entities.Host{
 				AgentID:     "1",
 				Name:        "apphost",
@@ -43,6 +46,7 @@ func sapSystemsFixtures() entities.SAPSystemInstances {
 			Type:                    "database",
 			InstanceNumber:          "10",
 			Features:                "features",
+			Status:                  string(sapcontrol.STATECOLOR_GREEN),
 			Tenants:                 pq.StringArray{"tenant"},
 			SystemReplication:       "Primary",
 			SystemReplicationStatus: "SOK",
@@ -51,6 +55,7 @@ func sapSystemsFixtures() entities.SAPSystemInstances {
 				Name:        "dbhost_1",
 				ClusterID:   "cluster_id_2",
 				ClusterName: "dbcluster",
+				IPAddresses: pq.StringArray{"192.168.1.10"},
 			},
 			Tags: []*models.Tag{
 				{
@@ -67,6 +72,7 @@ func sapSystemsFixtures() entities.SAPSystemInstances {
 			Type:                    "database",
 			InstanceNumber:          "11",
 			Features:                "features",
+			Status:                  string(sapcontrol.STATECOLOR_YELLOW),
 			Tenants:                 pq.StringArray{"tenant"},
 			SystemReplication:       "Secondary",
 			SystemReplicationStatus: "SOK",
@@ -122,11 +128,13 @@ func (suite *SAPSystemsServiceTestSuite) TestSAPSystemsService_GetAllApplication
 
 	suite.EqualValues(models.SAPSystemList{
 		{
-			ID:     "sap_system_1",
-			SID:    "HA1",
-			Type:   models.SAPSystemTypeApplication,
-			DBHost: "dbhost_1",
-			DBName: "tenant",
+			ID:        "sap_system_1",
+			SID:       "HA1",
+			Type:      models.SAPSystemTypeApplication,
+			DBHost:    "dbhost_1",
+			DBName:    "tenant",
+			DBAddress: "192.168.1.10",
+			Health:    models.SAPSystemHealthCritical,
 			Instances: []*models.SAPSystemInstance{
 				{
 					Features:       "features",
@@ -137,12 +145,14 @@ func (suite *SAPSystemsServiceTestSuite) TestSAPSystemsService_GetAllApplication
 					ClusterName:    "appcluster",
 					SID:            "HA1",
 					Type:           models.SAPSystemTypeApplication,
+					Status:         string(sapcontrol.STATECOLOR_RED),
 				},
 			},
 			AttachedDatabase: &models.SAPSystem{
-				ID:   "sap_system_2",
-				SID:  "PRD",
-				Type: models.SAPSystemTypeDatabase,
+				ID:     "sap_system_2",
+				SID:    "PRD",
+				Type:   models.SAPSystemTypeDatabase,
+				Health: models.SAPSystemHealthWarning,
 				Instances: []*models.SAPSystemInstance{
 					{
 						HostID:                  "2",
@@ -155,6 +165,7 @@ func (suite *SAPSystemsServiceTestSuite) TestSAPSystemsService_GetAllApplication
 						SystemReplicationStatus: "SOK",
 						SID:                     "PRD",
 						Type:                    models.SAPSystemTypeDatabase,
+						Status:                  string(sapcontrol.STATECOLOR_GREEN),
 					},
 					{
 						HostID:                  "3",
@@ -167,6 +178,7 @@ func (suite *SAPSystemsServiceTestSuite) TestSAPSystemsService_GetAllApplication
 						SystemReplicationStatus: "SOK",
 						SID:                     "PRD",
 						Type:                    models.SAPSystemTypeDatabase,
+						Status:                  string(sapcontrol.STATECOLOR_YELLOW),
 					},
 				},
 			},
@@ -218,9 +230,10 @@ func (suite *SAPSystemsServiceTestSuite) TestSAPSystemsService_GetAllDatabases()
 
 	suite.EqualValues(models.SAPSystemList{
 		{
-			ID:   "sap_system_2",
-			SID:  "PRD",
-			Type: models.SAPSystemTypeDatabase,
+			ID:     "sap_system_2",
+			SID:    "PRD",
+			Type:   models.SAPSystemTypeDatabase,
+			Health: models.SAPSystemHealthWarning,
 			Instances: []*models.SAPSystemInstance{
 				{
 					Features:                "features",
@@ -233,6 +246,7 @@ func (suite *SAPSystemsServiceTestSuite) TestSAPSystemsService_GetAllDatabases()
 					SystemReplicationStatus: "SOK",
 					SID:                     "PRD",
 					Type:                    models.SAPSystemTypeDatabase,
+					Status:                  string(sapcontrol.STATECOLOR_GREEN),
 				},
 				{
 					Features:                "features",
@@ -245,6 +259,7 @@ func (suite *SAPSystemsServiceTestSuite) TestSAPSystemsService_GetAllDatabases()
 					SystemReplicationStatus: "SOK",
 					SID:                     "PRD",
 					Type:                    models.SAPSystemTypeDatabase,
+					Status:                  string(sapcontrol.STATECOLOR_YELLOW),
 				},
 			},
 			Tags: []string{"tag2"},

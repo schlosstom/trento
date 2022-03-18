@@ -103,7 +103,7 @@ func ApiHostHeartbeatHandler(hostService services.HostsService) gin.HandlerFunc 
 	}
 }
 
-func NewHostHandler(hostsService services.HostsService, subsService services.SubscriptionsService) gin.HandlerFunc {
+func NewHostHandler(hostsService services.HostsService, subsService services.SubscriptionsService, monitoringURL string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
 
@@ -123,9 +123,13 @@ func NewHostHandler(hostsService services.HostsService, subsService services.Sub
 			return
 		}
 
+		jobsState, _ := hostsService.GetExportersState(host.Name)
+
 		c.HTML(http.StatusOK, "host.html.tmpl", gin.H{
-			"Host":          &host,
-			"Subscriptions": subs,
+			"Host":           &host,
+			"Subscriptions":  subs,
+			"MonitoringURL":  monitoringURL,
+			"ExportersState": jobsState,
 		})
 	}
 }

@@ -4,7 +4,7 @@ set -e
 
 readonly ARGS=("$@")
 readonly PROGNAME="./install-server.sh"
-TRENTO_VERSION="0.8.1"
+TRENTO_VERSION="0.9.1"
 
 usage() {
     cat <<-EOF
@@ -192,6 +192,10 @@ install_helm() {
 }
 
 update_helm_dependencies() {
+    local download_chart=${DOWNLOAD_CHART:-true}
+    if [[ "$download_chart" != true ]]; then
+        return
+    fi
     echo "Updating Helm dependencies..."
     helm repo add bitnami https://charts.bitnami.com/bitnami >/dev/null
     helm repo update >/dev/null
